@@ -18,12 +18,26 @@ public class AudioStorageService {
 
     public Path save(MultipartFile file) throws IOException {
         String id = UUID.randomUUID().toString();
-        String originalName = file.getOriginalFilename() == null ? "audio.bin" : file.getOriginalFilename();
-        String fileName = id + "-" + originalName.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String extension = safeExtension(file.getOriginalFilename());
+        String fileName = id + extension;
         Path directory = Path.of(storagePath);
         Files.createDirectories(directory);
         Path destination = directory.resolve(fileName);
         Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
         return destination;
+    }
+
+    private String safeExtension(String filename) {
+        if (filename == null) {
+            return ".bin";
+        }
+        String lower = filename.toLowerCase();
+        if (lower.endsWith(".wav")) {
+            return ".wav";
+        }
+        if (lower.endsWith(".mp3")) {
+            return ".mp3";
+        }
+        return ".bin";
     }
 }
