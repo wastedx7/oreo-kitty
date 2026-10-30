@@ -1,0 +1,5 @@
+oreo:
+  kafka:
+    audio-topic: audio-processing-requested
+  storage:
+    path: uploads
