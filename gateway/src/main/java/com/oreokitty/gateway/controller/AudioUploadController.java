@@ -40,6 +40,10 @@ public class AudioUploadController {
         Path saved = storageService.save(file);
         String fileId = saved.getFileName().toString();
         publisher.publish(new AudioProcessingRequestedEvent(fileId, saved.toAbsolutePath().toString(), Instant.now().toEpochMilli()));
-        return ResponseEntity.accepted().body(Map.of("fileId", fileId, "status", "queued"));
+        return ResponseEntity.accepted().body(Map.of(
+                "jobId", fileId,
+                "fileId", fileId,
+                "status", "queued",
+                "streamUrl", "/api/translation/stream/" + fileId));
     }
 }
