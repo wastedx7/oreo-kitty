@@ -3,7 +3,13 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 
-from ml_service.app import AudioPreprocessor, CnnIntentModel, INTENT_LABELS
+from ml_service.app import (
+    AudioPreprocessor,
+    CnnIntentModel,
+    INTENT_LABELS,
+    PredictionResult,
+    ResultPublisher,
+)
 
 
 class TestAudioPipeline(unittest.TestCase):
@@ -29,6 +35,18 @@ class TestAudioPipeline(unittest.TestCase):
         self.assertIn(label, INTENT_LABELS)
         self.assertGreaterEqual(confidence, 0.5)
         self.assertLessEqual(confidence, 0.99)
+
+    def test_result_publisher_calls_postgres_and_grpc(self):
+        publisher = ResultPublisher("postgresql://db", "localhost:50051")
+        result = PredictionResult(file_id="f1", intent="hungry_demanding", confidence=0.92)
+
+        with patch.object(publisher, "_write_postgres") as write_postgres, patch.object(
+            publisher, "_send_grpc"
+        ) as send_grpc:
+            publisher.publish(result)
+
+        write_postgres.assert_called_once_with(result)
+        send_grpc.assert_called_once_with(result)
 
 
 if __name__ == "__main__":

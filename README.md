@@ -9,6 +9,7 @@ Event-driven cat audio intent detection prototype:
   - `content_purring`
   - `warning_hissing`
   - `mother_kitten`
+  - Persists predictions to PostgreSQL (`POSTGRES_DSN`) and sends result callbacks to the gateway over gRPC (`GATEWAY_GRPC_TARGET`).
 - **Training script** (`ml_service/train_cnn.py`): defines a CNN training pipeline over MFCC inputs.
 
 ## Quick validation
