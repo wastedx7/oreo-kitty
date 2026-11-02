@@ -21,12 +21,20 @@ public class TranslationStreamService {
 
         TranslationResult cached = completedResults.get(jobId);
         if (cached != null) {
-            sendResult(emitter, cached);
-            emitter.complete();
+            try {
+                sendConnected(emitter, jobId);
+                sendResult(emitter, cached);
+            } finally {
+                emitter.complete();
+            }
             return emitter;
         }
 
-        emitters.put(jobId, emitter);
+        if (sendConnected(emitter, jobId)) {
+            emitters.put(jobId, emitter);
+        } else {
+            emitter.complete();
+        }
         return emitter;
     }
 
@@ -43,6 +51,17 @@ public class TranslationStreamService {
             completedResults.put(jobId, result);
         }
         emitters.remove(jobId, emitter);
+    }
+
+    private boolean sendConnected(SseEmitter emitter, String jobId) {
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("connected")
+                    .data(Map.of("jobId", jobId, "status", "listening")));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private boolean sendResult(SseEmitter emitter, TranslationResult result) {
